@@ -1,0 +1,8 @@
+// DAZ Studio version 4.22.0.1 filetype DAZ Script
+
+var planeToCopy = Scene.getPrimarySelection();
+var local = planeToCopy.getLocalPos();
+
+var parent = planeToCopy.getNodeParent();
+parent.focalDistance = Math.abs(local.z);
+print(cameraToCopy.focalDistance);

@@ -1,0 +1,110 @@
+// DAZ Studio version 4.22.0.1 filetype DAZ Script
+
+(function(){
+	cameraToCopy = Scene.getPrimarySelection();
+	var cords = cameraToCopy.getFocalPoint(); 
+	print(cords.z);
+
+	var sOrigin = "Object Center";
+	var nSize = 100;
+	var nDivisions = 1;
+	
+	setBusyCursor();
+	
+	var oNode = new DzNode();
+	oNode.setName( "Plane" );
+	var oObject = new DzObject();
+	oObject.name = String( "Plane(%1)%2" ).arg( nSize ).arg( nDivisions );
+	
+	var oFacetShape = new DzFacetShape();
+	oFacetShape.name = "Default";
+	oFacetShape.setLabel( oFacetShape.name );
+	
+	var oFacetMesh = new DzFacetMesh();
+	var oMaterial = new DzDefaultMaterial();
+	oMaterial.name = "Default";
+	oMaterial.setLabel( oMaterial.name );
+	oFacetShape.addMaterial( oMaterial );
+	oFacetMesh.beginEdit();
+	var oMap = oFacetMesh.getUVs();
+	oFacetMesh.activateMaterial( oMaterial.name );
+
+	var i, j, idx, numVerts = nDivisions + 1;
+	var x, z, nHalfSize = nSize / 2;
+	var vecUVs = new DzVec3( 0, 0, 0 );
+
+	oFacetMesh.preSizeVertexArray( numVerts * numVerts );
+
+	for( i = 0; i < numVerts; i += 1 ){
+		z = i / nDivisions;
+		vecUVs.y = z;
+		for( j = 0; j < numVerts; j += 1 ){
+			x = j / nDivisions;
+			vecUVs.x = x;
+			oFacetMesh.addVertex( x * nSize - nHalfSize, 0, nHalfSize - z * nSize );
+			oMap.appendPnt2Vec( vecUVs );
+		}
+	}
+	
+	oFacetMesh.preSizeFacets( nDivisions * nDivisions );	
+	var aVertexIndices = new Array( 4 );
+	var i = 0;
+	while (i < nDivisions) {
+		var j = 0;
+		while (j < nDivisions) {
+			var baseIndex = j + (i * numVerts);
+			var nextRowBaseIndex = baseIndex + numVerts;
+
+			aVertexIndices[0] = baseIndex;
+			aVertexIndices[1] = baseIndex + 1;
+			aVertexIndices[2] = nextRowBaseIndex + 1;
+			aVertexIndices[3] = nextRowBaseIndex;
+
+			oFacetMesh.addFacet(aVertexIndices, aVertexIndices);
+
+			j += 1;
+		}
+
+		i += 1;
+	}
+	
+	oFacetMesh.finishEdit();
+	oFacetShape.setFacetMesh( oFacetMesh );
+	oObject.addShape( oFacetShape );
+	oNode.setObject( oObject );
+	
+	var boxLocal = oNode.getLocalBoundingBox();
+	var vecMax = boxLocal.max;
+	var vecMin = boxLocal.min;
+	
+	if( sOrigin == "Object Center" ){
+		var nMid = (vecMax.y + vecMin.y) * 0.5;
+		
+		var vecOrigin = new DzVec3(0, nMid, 0);
+		oNode.setOrigin( vecOrigin, true );
+		oNode.setOrigin( vecOrigin );
+	}
+
+	vecMax.y = 1;
+	var vecEndPoint = new DzVec3( 0, vecMax.y, 0 );
+	oNode.setEndPoint( vecEndPoint, true );
+	oNode.setEndPoint( vecEndPoint );
+	
+	var oPresentation = oNode.getPresentation();
+	if( !oPresentation ){
+		oPresentation = new DzPresentation();
+		oNode.setPresentation( oPresentation );
+	}
+
+	oPresentation.type = "Prop";
+	
+	Scene.addNode( oNode );
+	cameraToCopy.addNodeChild(oNode);
+	oNode.setWSPos(cords);
+	var quart = oNode.getLocalRot();
+	quart.setValue(0,1.5708);
+	oNode.setLocalRot(quart);
+	oNode.setVisibleInSimulation(false);
+	oNode.setVisibleInRender(false);
+	clearBusyCursor();
+})();
