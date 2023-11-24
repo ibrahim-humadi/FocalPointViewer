@@ -106,5 +106,7 @@
 	oNode.setLocalRot(quart);
 	oNode.setVisibleInSimulation(false);
 	oNode.setVisibleInRender(false);
+	cameraToCopy.select(false);
+	oNode.select(true);
 	clearBusyCursor();
 })();
