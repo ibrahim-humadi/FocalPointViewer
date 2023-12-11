@@ -1,0 +1,26 @@
+// DAZ Studio version 4.22.0.1 filetype DAZ Script
+
+(function(){
+    var camera = Scene.getPrimarySelection();
+
+    var nodes = camera.getNodeChildren();
+    
+    for( i = 0; i < nodes.length; i += 1 ){
+        if (nodes[i].getLabel() == "mirror")
+        {
+            print("Got the mirror");
+            var pos1 = nodes[i].getLocalPos();
+        }
+        if (nodes[i].getLabel() == "subject")
+        {
+            print("Got the subject");
+            var pos2 = nodes[i].getLocalPos();
+        }
+    }
+        var distance = Math.abs(pos1.z - pos2.z);
+        var mirrorDistance = Math.abs(pos1.z);
+        var newDistance = mirrorDistance + distance;
+        beginUndo();
+        camera.focalDistance = newDistance;
+        acceptUndo("Set focal distance to: " + newDistance);
+})();
